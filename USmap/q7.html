@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="../lib/d3.v3.min.js"></script>
+	<script src="../lib/topojson.v1.min.js"></script>
+	<script src="../lib/d3-queue.v3.min.js"></script>
+	<script src="../lib/d3.tip.v0.6.3.js"></script>
+	<style type="text/css">
+		.states{
+			fill: none;
+			stroke: #a9a9a9;
+			stroke-width: 1;
+		}
+		.states:hover{
+			fill-opacity:0.5;
+		}
+		.d3-tip {
+		  	line-height: 1;
+		  	padding: 12px;
+		  	background: rgba(0, 0, 0, 0.9);
+		  	color: rgba(255, 255, 255, 1);
+		}
+	</style>
+</head>
+<body>
+	<script type="text/javascript">
+		var width = 960,
+			height = 500;
+		var svg = d3.select('body').append('svg')
+    				.attr('width', width)
+    				.attr('height', height);
+
+    	svg.append("text")
+				.attr("x", width/2)
+				.attr("y", 20)
+				.attr("text-anchor", "middle")
+				.style("font-size", "18px")
+				.text("Median Earnings by State");
+ 
+		var projection = d3.geo.albersUsa()
+			.scale(1000)
+			.translate([width / 2, height / 2]);
+		 
+		var path = d3.geo.path()
+			.projection(projection);
+
+		d3.queue()
+			.defer(d3.json, "us.json")
+			.defer(d3.json, "median_earnings.json")
+			.defer(d3.csv, "median_ages.csv")
+			.await(makeMap);
+
+		function makeMap(error, states, earnings, ages) {
+			console.log(ages);
+			var earningsmap = earnings.reduce(function(map, obj) {
+				map[obj.id] = obj.median_earnings;
+				return map;
+			}, {});
+			// console.log(earningsmap);
+			var colorScale = d3.scale.linear()
+								.domain([10000, d3.max(earnings, function(d) { return d.median_earnings; })])
+								.range(['white', 'blue']);
+			var statetile = svg.append('g')
+				.selectAll('.states')
+				.data(topojson.feature(states, states.objects.states).features)
+				.enter().append('path')
+				.attr('d', path)
+				.attr('class', 'states')
+				.style('fill', function(d) { return colorScale(earningsmap[d.id]); });
+
+			var tip = d3.tip()
+						.attr("class", 'd3-tip')
+						.direction('e')
+						.html(function(d) {
+							var agesArray = ages.filter(function(obj) {
+								return obj.id == d.id;
+							});
+							agesArray.sort(function(a,b) {
+								return a.median_age - b.median_age;
+							})
+							var result = agesArray.slice(0,5);
+							var text = "";
+							for(var i=0; i<result.length; i++) {
+								text += "<span>" + result[i].name + " (Age: " + result[i].median_age + ")</span><br>";
+							}
+							return text;
+						})
+
+			svg.call(tip);
+			statetile.on('mouseover', tip.show)
+      				.on('mouseout', tip.hide);
+
+			var samplepoints = [10000,15000,18000,21000,24000,27000,30000,33000];
+			var legend = d3.select("body").append("svg")
+      			.attr("class", "legend")
+     			.attr("width", 140)
+    			.attr("height", 200)
+   				.selectAll("g")
+   				.data(samplepoints)
+   				.enter()
+   				.append("g")
+     			.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  			legend.append("rect")
+   				  .attr("width", 18)
+   				  .attr("height", 18)
+   				  .style("fill", function(d) { return colorScale(d); });
+
+  			legend.append("text")
+    		  	  .attr("x", 24)
+    		  	  .attr("y", 9)
+    		  	  .attr("dy", ".35em")
+    		  	  .text(function(d) { return '$'+d; });
+
+		}
+	</script>
+</body>
+</html>

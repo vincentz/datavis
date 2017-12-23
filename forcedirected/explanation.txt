@@ -1,0 +1,2 @@
+c) I scale the radius linearly just by the actual degree of the node,
+because it best fits the browser and I can figure them out clearly

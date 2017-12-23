@@ -1,0 +1,3 @@
+plasma glucose vs. insulin is better at separating the classes, because positive class and negative class
+is distributed in different place in the scatterplot. And two classes are almost overlapped in the BMI vs.
+blood pressure scatterplot.

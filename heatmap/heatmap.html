@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="../lib/d3.v3.min.js"></script>
+	<style type="text/css">
+		body {
+		  font: 11px sans-serif;
+		}
+
+		rect.bordered {
+	        stroke: #E6E6E6;
+    	    stroke-width: 2px;   
+      	}
+	</style>
+</head>
+<body>
+	<div id="heatmap">
+	    <div id='title'></div>
+	</div>
+	<script type="text/javascript">
+		var margin = {top: 30, right: 0, bottom: 100, left: 70};
+		var w = 900;
+		var h = 400;
+		var gridSize = Math.floor(w/15);
+		var buckets = 9;
+		var houses = ["Baratheon", "Greyjoy", "Lannister", "Martell", "Stark", "Targaryen", "Tyrell"];
+		var colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];
+		var episodes = [1,2,3,4,5,6,7,8,9,10];
+		var seasons = ["season 1","season 2","season 3","season 4","season 5","season 6"];
+
+		var title = d3.select("#title").append("svg")
+					.attr("width", 600)
+					.attr("height", 30)
+		title.append("text")
+			.attr("x", (10*gridSize+margin.left)/2)
+			.attr("y", 20)
+			.attr("text-anchor", "middle")
+			.style("font-size", "16px")
+			.text("A Visualization of Ice and Fire");
+			
+
+		var svg = d3.select("#heatmap").append("svg")
+					.attr("width", w+margin.left+margin.right)
+					.attr("height", h+margin.top+margin.bottom)
+					.append("g")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			
+		var select = d3.select("#title")
+						.append("select")
+						.on("change", onchange)
+						.selectAll("option")
+						.data(seasons).enter()
+						.append("option")
+						.text(function(d) { return d; })
+
+		var yScale = d3.scale.ordinal()
+								.domain(houses)
+								.range([0,1,2,3,4,5,6]);
+
+		svg.append("text")
+				.text("House")
+				.attr("x", 0)
+				.attr("y", -55)
+				.style("text-anchor", "end")
+				.style("font-weight", "bold")
+				.attr("transform", "translate(-6," + gridSize / 1.6 + ")");
+			var houseLabels = svg.selectAll(".houseLabel")
+								.data(houses)
+								.enter().append("text")
+								.text(function(d) { return d; })
+								.attr("x", 0)
+								.attr("y", function(d, i) { return i * gridSize; })
+								.style("text-anchor", "end")
+								.attr("transform", "translate(-6," + gridSize / 1.6 + ")");
+			svg.append("text")
+				.text("Episode")
+				.attr("x", gridSize*10+10)
+				.attr("y", h+40)
+				.style("text-anchor", "end")
+				.style("font-weight", "bold")
+				.attr("transform", "translate(" + gridSize / 2 + ", -6)");
+			var episodeLabels = svg.selectAll(".episodeLabel")
+									.data(episodes)
+									.enter().append("text")
+									.text(function(d) { return d; })
+									.attr("x", function(d, i) { return i * gridSize; })
+									.attr("y", h+40)
+									.style("text-anchor", "middle")
+									.attr("transform", "translate(" + gridSize / 2 + ", -6)");
+
+		svg.append("text")
+           			.text("No of Appearences")
+           			.attr("x", 0)
+           			.attr("y", h+55)
+           			.style("text-anchor", "begin");
+
+		heatmapChart(1);
+	
+		function heatmapChart(seasonNo) {d3.csv("http://localhost:8000/Q4/heatmap.csv", function(data) {
+			console.log(data);
+			// svg.remove();
+			var houses = ["Baratheon", "Greyjoy", "Lannister", "Martell", "Stark", "Targaryen", "Tyrell"];
+			var seasondata = [];
+			data.forEach(function(entry) {
+				if(entry.season==seasonNo) {
+					for (i=0; i<7; i++) {
+						var info = {house: houses[i], appearence: +entry[houses[i]], episode: +entry.episode};
+						seasondata.push(info);
+					}
+				}
+			});
+
+			
+			var colorScale = d3.scale.quantile()
+										.domain([0, buckets-1, d3.max(seasondata, function(d) { return d.appearence; } )])
+										.range(colors);
+			
+			
+
+			var tiles = svg.selectAll(".tile")
+							.data(seasondata)
+							.enter().append("rect")
+							.attr("x", function(d) { return (d.episode-1) * gridSize; })
+							.attr("y", function(d) {
+								return yScale(d.house) * gridSize; 
+							})
+							.attr("class", "bordered")
+							.attr("width", gridSize)
+							.attr("height", gridSize)
+							.style("fill", function(d) {
+								return colorScale(d.appearence);
+							});
+
+			var legendElementWidth = gridSize;
+			var legend = svg.selectAll(".legend")
+              				.data([0].concat(colorScale.quantiles()), function(d) { return d; });
+
+          	legend.enter().append("g")
+              		.attr("class", "legend");
+
+          	legend.append("rect")
+            		.attr("x", function(d, i) { return legendElementWidth * i; })
+            		.attr("y", h+60)
+            		.attr("width", legendElementWidth)
+            		.attr("height", gridSize / 3)
+            		.style("fill", function(d, i) { return colors[i]; });
+
+          	legend.append("text")
+            		.text(function(d) { return Math.round(d); })
+            		.attr("x", function(d, i) { return legendElementWidth * i; })
+            		.attr("y", h + gridSize + 30);
+
+           	legend.exit().remove();
+		});}
+
+		function onchange() {
+			selectValue = d3.select('select').property('value');
+			// console.log(selectValue);
+			var seasonNo = 1;
+			if(selectValue == "season 1") seasonNo = 1;
+			if(selectValue == "season 2") seasonNo = 2;
+			if(selectValue == "season 3") seasonNo = 3;
+			if(selectValue == "season 4") seasonNo = 4;
+			if(selectValue == "season 5") seasonNo = 5;
+			if(selectValue == "season 6") seasonNo = 6;
+			// console.log(seasonNo);
+			heatmapChart(seasonNo);
+				
+		}
+		
+	</script>
+</body>
+</html>

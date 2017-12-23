@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="../lib/d3.v3.min.js"></script>
+	<style type="text/css">
+		body {
+		  font: 11px sans-serif;
+		}
+		
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+		.point {
+			fill: none;
+		}
+		.pagebreak { page-break-before: always; }
+	</style>
+</head>
+<body>
+	<div id="plot1"></div>
+	<div class="pagebreak"> </div>
+	<div id="plot2"></div>
+	<div class="pagebreak"> </div>
+	<div id="plot3"></div>
+	<div class="pagebreak"> </div>
+	<div id="plot4"></div>
+	<div class="pagebreak"> </div>
+	<div id="plot5"></div>
+	<script>
+		d3.csv("diabetes.csv", function(data) {
+			console.log(data);
+
+			var w = 600;
+			var h = 400;
+			var margin = {top: 50, right: 80, bottom: 30, left: 50};
+
+			var xscale = d3.scale.linear()
+							.domain([0, 200])
+							.range([margin.left, w+margin.left]);
+			var yscale = d3.scale.linear()
+							.domain([0, 1000])
+							.range([h+margin.top, margin.top]);
+			var xaxis = d3.svg.axis()
+								.scale(xscale)
+								.orient("bottom")
+								.ticks(5)
+			var yaxis = d3.svg.axis()
+								.scale(yscale)
+								.orient("left")
+								.ticks(5)
+
+			var svg = d3.select("#plot1")
+						.append("svg")
+						.attr("width", w+margin.left+margin.right)
+						.attr("height", h+margin.top+margin.bottom);
+
+			svg.selectAll(".point")
+				.data(data)
+				.enter().append("path")
+				.attr("d", d3.svg.symbol().type(function(d) {
+					return d.class==1 ? "triangle-up" : "circle";
+				}))
+				.attr("class", "point")
+				.attr("stroke", function(d) {
+					return d.class==1 ? "red" : "blue";
+				})
+				.attr("transform", function(d) {
+					return "translate(" + xscale(d.plasma_glucose) + "," + yscale(d.insulin) + ")";
+				})
+			svg.append("text")
+				.attr("x", (w+margin.left)/2)
+				.attr("y", (margin.top/2))
+				.attr("text-anchor", "middle")
+				.style("font-size", "16px")
+				.text("Plasma Glucose vs. Insulin");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (h+margin.top) + ")")
+				.call(xaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("x", w+margin.left)
+				.attr("y", -6)
+				.style("text-anchor", "end")
+				.text("Plasma Glucose");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate("+ margin.left +",0)")
+				.call(yaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -margin.top)
+				.attr("y", 10)
+				// .attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("Insulin");
+			var legendp = svg.append("g")
+							.attr("transform", "translate(" + (w+margin.left+20) + ",50)");
+			legendp.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("triangle-up").size(64))
+					.attr("stroke", "red")
+					.style("fill", "none");
+			legendp.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("positive");
+			var legendn = svg.append("g")
+								.attr("transform", "translate(" + (w+margin.left+20) + ",68)");
+			legendn.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("circle"))
+					.attr("stroke", "blue")
+					.style("fill", "none");
+			legendn.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("negative");
+
+			var svg = d3.select("#plot2")
+						.append("svg")
+						.attr("width", w+margin.left+margin.right)
+						.attr("height", h+margin.top+margin.bottom);
+
+			var xscale = d3.scale.linear()
+							.domain([0, 75])
+							.range([margin.left, w+margin.left]);
+			var yscale = d3.scale.linear()
+							.domain([0, 120])
+							.range([h+margin.top, margin.top]);
+			var xaxis = d3.svg.axis()
+								.scale(xscale)
+								.orient("bottom")
+								.ticks(5)
+			var yaxis = d3.svg.axis()
+								.scale(yscale)
+								.orient("left")
+								.ticks(5)
+
+			svg.selectAll(".point")
+				.data(data)
+				.enter().append("path")
+				.attr("d", d3.svg.symbol().type(function(d) {
+					return d.class==1 ? "triangle-up" : "circle";
+				}))
+				.attr("class", "point")
+				.attr("stroke", function(d) {
+					return d.class==1 ? "red" : "blue";
+				})
+				.attr("transform", function(d) {
+					return "translate(" + xscale(d.bmi) + "," + yscale(d.blood_pressure) + ")";
+				})
+			svg.append("text")
+				.attr("x", (w+margin.left)/2)
+				.attr("y", (margin.top/2))
+				.attr("text-anchor", "middle")
+				.style("font-size", "16px")
+				.text("BMI vs. Blood Pressure");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (h+margin.top) + ")")
+				.call(xaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("x", w+margin.left)
+				.attr("y", -6)
+				.style("text-anchor", "end")
+				.text("BMI");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate("+ margin.left +",0)")
+				.call(yaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -margin.top)
+				.attr("y", 10)
+				// .attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("Blood Pressure");
+			var legendp = svg.append("g")
+							.attr("transform", "translate(" + (w+margin.left+20) + ",50)");
+			legendp.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("triangle-up").size(64))
+					.attr("stroke", "red")
+					.style("fill", "none");
+			legendp.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("positive");
+			var legendn = svg.append("g")
+								.attr("transform", "translate(" + (w+margin.left+20) + ",68)");
+			legendn.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("circle"))
+					.attr("stroke", "blue")
+					.style("fill", "none");
+			legendn.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("negative");
+
+			// var w = 600;
+			// var h = 400;
+			// var margin = {top: 50, right: 80, bottom: 30, left: 50};
+
+			var xscale = d3.scale.linear()
+							.domain([0, 200])
+							.range([margin.left, w+margin.left]);
+			var yscale = d3.scale.linear()
+							.domain([0, 1000])
+							.range([h+margin.top, margin.top]);
+			var sizescale = d3.scale.linear()
+								.domain([0, 200000])
+								.range([1, 500]);
+			var xaxis = d3.svg.axis()
+								.scale(xscale)
+								.orient("bottom")
+								.ticks(5)
+			var yaxis = d3.svg.axis()
+								.scale(yscale)
+								.orient("left")
+								.ticks(5)
+
+			var svg = d3.select("#plot3")
+						.append("svg")
+						.attr("width", w+margin.left+margin.right)
+						.attr("height", h+margin.top+margin.bottom);
+
+			svg.selectAll(".point")
+				.data(data)
+				.enter().append("path")
+				.attr("d", d3.svg.symbol().type(function(d) {
+					return d.class==1 ? "triangle-up" : "circle";
+					}).size(function(d) {
+						return sizescale(d.plasma_glucose*d.insulin);
+					}))
+				.attr("class", "point")
+				.attr("stroke", function(d) {
+					return d.class==1 ? "red" : "blue";
+				})
+				.attr("transform", function(d) {
+					return "translate(" + xscale(d.plasma_glucose) + "," + yscale(d.insulin) + ")";
+				})
+			svg.append("text")
+				.attr("x", (w+margin.left)/2)
+				.attr("y", (margin.top/2))
+				.attr("text-anchor", "middle")
+				.style("font-size", "16px")
+				.text("Plasma Glucose vs. Insulin, scaled symbols");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (h+margin.top) + ")")
+				.call(xaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("x", w+margin.left)
+				.attr("y", -6)
+				.style("text-anchor", "end")
+				.text("Plasma Glucose");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate("+ margin.left +",0)")
+				.call(yaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -margin.top)
+				.attr("y", 10)
+				// .attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("Insulin");
+			var legendp = svg.append("g")
+							.attr("transform", "translate(" + (w+margin.left+20) + ",50)");
+			legendp.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("triangle-up").size(64))
+					.attr("stroke", "red")
+					.style("fill", "none");
+			legendp.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("positive");
+			var legendn = svg.append("g")
+								.attr("transform", "translate(" + (w+margin.left+20) + ",68)");
+			legendn.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("circle"))
+					.attr("stroke", "blue")
+					.style("fill", "none");
+			legendn.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("negative");
+
+			var w = 600;
+			var h = 400;
+			var margin = {top: 50, right: 80, bottom: 30, left: 50};
+
+			var xscale = d3.scale.linear()
+							.domain([0, 200])
+							.range([margin.left, w+margin.left]);
+			var yscale = d3.scale.sqrt()
+							.domain([0, 1000])
+							.range([h+margin.top, margin.top]);
+			var xaxis = d3.svg.axis()
+								.scale(xscale)
+								.orient("bottom")
+								.ticks(5)
+			var yaxis = d3.svg.axis()
+								.scale(yscale)
+								.orient("left")
+								.ticks(5)
+
+			var svg = d3.select("#plot4")
+						.append("svg")
+						.attr("width", w+margin.left+margin.right)
+						.attr("height", h+margin.top+margin.bottom);
+
+			svg.selectAll(".point")
+				.data(data)
+				.enter().append("path")
+				.attr("d", d3.svg.symbol().type(function(d) {
+					return d.class==1 ? "triangle-up" : "circle";
+				}))
+				.attr("class", "point")
+				.attr("stroke", function(d) {
+					return d.class==1 ? "red" : "blue";
+				})
+				.attr("transform", function(d) {
+					return "translate(" + xscale(d.plasma_glucose) + "," + yscale(d.insulin) + ")";
+				})
+			svg.append("text")
+				.attr("x", (w+margin.left)/2)
+				.attr("y", (margin.top/2))
+				.attr("text-anchor", "middle")
+				.style("font-size", "16px")
+				.text("Plasma Glucose vs. Insulin (square-root-scaled)");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (h+margin.top) + ")")
+				.call(xaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("x", w+margin.left)
+				.attr("y", -6)
+				.style("text-anchor", "end")
+				.text("Plasma Glucose");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate("+ margin.left +",0)")
+				.call(yaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -margin.top)
+				.attr("y", 10)
+				// .attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("Insulin");
+			var legendp = svg.append("g")
+							.attr("transform", "translate(" + (w+margin.left+20) + ",50)");
+			legendp.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("triangle-up").size(64))
+					.attr("stroke", "red")
+					.style("fill", "none");
+			legendp.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("positive");
+			var legendn = svg.append("g")
+								.attr("transform", "translate(" + (w+margin.left+20) + ",68)");
+			legendn.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("circle"))
+					.attr("stroke", "blue")
+					.style("fill", "none");
+			legendn.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("negative");
+
+			var w = 600;
+			var h = 400;
+			var margin = {top: 50, right: 80, bottom: 30, left: 50};
+
+			var xscale = d3.scale.linear()
+							.domain([0, 200])
+							.range([margin.left, w+margin.left]);
+			var yscale = d3.scale.log().clamp(true)
+							.domain([1, 1000])
+							.range([h+margin.top, margin.top]);
+			var xaxis = d3.svg.axis()
+								.scale(xscale)
+								.orient("bottom")
+								.ticks(5)
+			var yaxis = d3.svg.axis()
+								.scale(yscale)
+								.orient("left")
+								.ticks(5)
+
+			var svg = d3.select("#plot5")
+						.append("svg")
+						.attr("width", w+margin.left+margin.right)
+						.attr("height", h+margin.top+margin.bottom);
+
+			svg.selectAll(".point")
+				.data(data)
+				.enter().append("path")
+				.attr("d", d3.svg.symbol().type(function(d) {
+					return d.class==1 ? "triangle-up" : "circle";
+				}))
+				.attr("class", "point")
+				.attr("stroke", function(d) {
+					return d.class==1 ? "red" : "blue";
+				})
+				.attr("transform", function(d) {
+					return "translate(" + xscale(d.plasma_glucose) + "," + yscale(d.insulin) + ")";
+				})
+			svg.append("text")
+				.attr("x", (w+margin.left)/2)
+				.attr("y", (margin.top/2))
+				.attr("text-anchor", "middle")
+				.style("font-size", "16px")
+				.text("Plasma Glucose vs. Insulin (log-scaled)");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (h+margin.top) + ")")
+				.call(xaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("x", w+margin.left)
+				.attr("y", -6)
+				.style("text-anchor", "end")
+				.text("Plasma Glucose");
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate("+ margin.left +",0)")
+				.call(yaxis)
+				.append("text")
+				.attr("class", "label")
+				.attr("transform", "rotate(-90)")
+				.attr("x", -margin.top)
+				.attr("y", 10)
+				// .attr("dy", ".71em")
+				.style("text-anchor", "end")
+				.text("Insulin");
+			var legendp = svg.append("g")
+							.attr("transform", "translate(" + (w+margin.left+20) + ",50)");
+			legendp.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("triangle-up").size(64))
+					.attr("stroke", "red")
+					.style("fill", "none");
+			legendp.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("positive");
+			var legendn = svg.append("g")
+								.attr("transform", "translate(" + (w+margin.left+20) + ",68)");
+			legendn.append("path")
+					.attr("class", "legend")
+					.attr("d", d3.svg.symbol().type("circle"))
+					.attr("stroke", "blue")
+					.style("fill", "none");
+			legendn.append("text")
+					.attr("class", "label")
+					.attr("dx", "1em")
+					.attr("dy", ".35em")
+					.style("text-anchor", "begin")
+					.text("negative");
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<script src="../lib/d3.v3.min.js"></script>
+	<style type="text/css">
+		body {
+            font-family: "Arial", sans-serif;
+        }
+
+        #linechart {
+          	left: 960px;
+        	position: absolute;
+        }
+        
+        .bar {
+            fill: #808080;
+        }
+        
+        .axis {
+            font-size: 13px;
+        }
+        
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+        
+        .label {
+            font-size: 13px;
+        }
+
+        .line {
+		  	fill: none;
+		  	stroke: steelblue;
+		  	stroke-width: 2px;
+		}
+	</style>
+</head>
+<body>
+	<div id="barchart">
+		<div id="linechart"></div>
+	</div>
+	<script type="text/javascript">
+		var data = [{club:'Manchester United',value:{year_2013:3165, year_2014:2810, year_2015:3100, year_2016:3317, year_2017:4583}},
+					{club:'Chelsea',value:{year_2013:901, year_2014:868, year_2015:1370, year_2016:1661, year_2017:1845}},
+					{club:'Manchester City',value:{year_2013:689, year_2014:863, year_2015:1380, year_2016:1921, year_2017:2083}},
+					{club:'Liverpool',value:{year_2013:651, year_2014:704, year_2015:982, year_2016:1548, year_2017:1492}},
+					{club:'Arsenal',value:{year_2013:1326, year_2014:1331, year_2015:1310, year_2016:2017, year_2017:1932}}];
+
+		data.forEach(function(d) {
+			d['sum'] = +d.value.year_2013+d.value.year_2014+d.value.year_2015+d.value.year_2016+d.value.year_2017;
+		})
+		console.log(data);
+		var margin = { top: 15, right: 25, bottom: 15, left: 120};
+		var width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+        var svg = d3.select("#barchart").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var x = d3.scale.linear()
+            .range([0, width])
+            .domain([0, d3.max(data, function (d) {
+                return d.sum;
+            })]);
+        var y = d3.scale.ordinal()
+            .rangeRoundBands([height, 0], .1)
+            .domain(data.map(function (d) {
+                return d.club;
+            }));
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            //no tick marks
+            .tickSize(0)
+            .orient("left");
+        var gy = svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+        var bars = svg.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("g")
+        bars.append("rect")
+            .attr("class", "bar")
+            .attr("y", function (d) {
+                return y(d.club);
+            })
+            .attr("height", y.rangeBand())
+            .attr("x", 0)
+            .attr("width", function (d) {
+                return x(d.sum);
+            })
+            .on("mouseover", mouseover)
+            .on("mouseout", mouseout);
+        bars.append("text")
+            .attr("class", "label")
+            .attr("y", function (d) {
+                return y(d.club) + y.rangeBand() / 2 + 4;
+            })
+            .attr("x", 10)
+            .style("fill", "white")
+            .text(function (d) {
+                return "$"+d.sum;
+            });
+
+        var margin = { top: 30, right: 25, bottom: 30, left: 50};
+		var width = 400 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+        var chartsvg = d3.select("#linechart").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        function mouseover(d, i) {
+        	d3.select(this).style("fill", "#3399ff");
+        	data = [{"year": 2013, "value":d.value.year_2013},{"year": 2014, "value":d.value.year_2014},{"year": 2015, "value":d.value.year_2015},{"year": 2016, "value":d.value.year_2016},{"year": 2017, "value":d.value.year_2017}];
+        	console.log(data);
+        	var x = d3.scale.ordinal().domain(["2013","2014","2015","2016","2017"]).rangePoints([0,width]);
+        	var y = d3.scale.linear().domain([0, d3.max(data, function(d) { return d.value; })]).range([height,0]);
+        	var xAxis = d3.svg.axis().scale(x)
+    					.orient("bottom").ticks(5);
+			var yAxis = d3.svg.axis().scale(y)
+			    		.orient("left").ticks(5);
+
+        	var valueline = d3.svg.line()
+    							.x(function(d) { return x(d.year); })
+    							.y(function(d) { return y(d.value); });
+    		chartsvg.append("path")
+      				.attr("class", "line")
+      				.attr("d", valueline(data));
+      		chartsvg.append("g")
+        		.attr("class", "x axis")
+        		.attr("transform", "translate(0," + height + ")")
+        		.call(xAxis)
+        		.append("text")
+      			.attr("class", "label")
+      			.attr("x", width)
+      			.attr("y", -6)
+      			.style("text-anchor", "middle")
+      			.text("year");
+        	chartsvg.append("g")
+        		.attr("class", "y axis")
+        		.call(yAxis)
+        		.append("text")
+      			.attr("class", "label")
+      			.attr("y", -10)
+      			.style("text-anchor", "end")
+      			.text("value");
+        }
+
+        function mouseout() {
+        	d3.select(this).style("fill", "#808080");
+        	chartsvg.selectAll("*").remove();
+        }
+	</script>
+</body>
+</html>
